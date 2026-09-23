@@ -64,25 +64,8 @@ bindkey '^?' backward-delete-char    # backspace
 bindkey '^H' backward-delete-char
 bindkey '^R' history-incremental-search-backward
 
-# ── Prompt minimal ──────────────────────────────────────────────────────
-# Formato: directorio (rama git) $
-# Sin starship, sin powerlevel10k — puro zsh
-
-autoload -Uz vcs_info
-precmd() { vcs_info }
-
-zstyle ':vcs_info:git:*' formats ' %F{yellow}(%b)%f'
-zstyle ':vcs_info:*' enable git
-
-setopt PROMPT_SUBST
-PROMPT='%F{blue}%~%f${vcs_info_msg_0_} %(?.%F{green}.%F{red})$%f '
-
-# Indicador de vi normal mode en el prompt derecho
-function zle-keymap-select {
-    RPROMPT="${${KEYMAP/vicmd/%F{red}[N]%f}/(main|viins)/}"
-    zle reset-prompt
-}
-zle -N zle-keymap-select
+# ── Prompt ──────────────────────────────────────────────────────────────
+eval "$(starship init zsh)"
 
 # ── Aliases ──────────────────────────────────────────────────────────────
 alias ls='ls --color=auto'
@@ -169,6 +152,7 @@ fi
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
+export FZF_DEFAULT_OPTS='--color=fg:#f8f8f2,bg:#282a36,hl:#bd93f9 --color=fg+:#f8f8f2,bg+:#44475a,hl+:#bd93f9 --color=info:#ffb86c,prompt:#50fa7b,pointer:#ff79c6 --color=marker:#ff79c6,spinner:#ffb86c,header:#6272a4'
 
 # ── Hooks ───────────────────────────────────────────────────────────────
 autoload -Uz add-zsh-hook
@@ -207,3 +191,26 @@ uvjupyter() {
 }
 
 . "$HOME/.local/share/../bin/env"
+
+
+# Added by Antigravity CLI installer
+export PATH="/home/trappedintesseract/.local/bin:$PATH"
+
+# ── eza Dracula Theme ───────────────────────────────────────────────────
+export EZA_COLORS="\
+uu=36:\
+uR=31:\
+un=35:\
+gu=37:\
+da=2;34:\
+ur=34:\
+uw=95:\
+ux=36:\
+ue=36:\
+gr=34:\
+gw=35:\
+gx=36:\
+tr=34:\
+tw=35:\
+tx=36:\
+xx=95:"

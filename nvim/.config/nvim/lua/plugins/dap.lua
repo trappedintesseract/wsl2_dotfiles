@@ -78,7 +78,23 @@ return {
                     stopAtBeginningOfMainSubprogram = false,
                 },
             }
+            -- Python / debugpy
+            dap.adapters.python = {
+                type = "executable",
+                command = vim.fn.expand("~/.local/share/nvim/python-env/bin/python"),
+                args = { "-m", "debugpy.adapter" },
+            }
 
+            dap.configurations.python = {
+                {
+                    type = "python",
+                    request = "launch",
+                    name = "Launch current file",
+                    program = "${file}",
+                    pythonPath = vim.fn.expand("~/.local/share/nvim/python-env/bin/python"),
+                    console = "integratedTerminal",
+                },
+            }
             -- Debugger controls
 
             vim.keymap.set("n", "<leader>db", dap.toggle_breakpoint, {
