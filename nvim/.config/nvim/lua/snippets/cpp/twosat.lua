@@ -1,0 +1,51 @@
+local ls = require("luasnip")
+local s = ls.snippet
+local t = ls.text_node
+
+ls.add_snippets("cpp", {
+
+  s("twosat", {
+    t({
+      "struct TwoSAT {",
+      "  int n;",
+      "  vector<vector<int>> g;",
+      "  vector<int> comp, value;",
+      "  TwoSAT(int n) : n(n), g(2 * n), comp(2 * n, -1), value(n, 0) {}",
+      "  void add_clause(int a, bool va, int b, bool vb) {",
+      "    g[2 * a + (va ^ 1)].push_back(2 * b + vb);",
+      "    g[2 * b + (vb ^ 1)].push_back(2 * a + va);",
+      "  }",
+      "  bool solve() {",
+      "    vector<int> num(2 * n, -1), low(2 * n), stk, on(2 * n, 0);",
+      "    int timer = 0, nc = 0;",
+      "    auto go = [&](auto &&self, int u) -> void {",
+      "      num[u] = low[u] = timer++;",
+      "      stk.push_back(u);",
+      "      on[u] = 1;",
+      "      for (int v : g[u]) {",
+      "        if (num[v] == -1) { self(self, v); low[u] = min(low[u], low[v]); }",
+      "        else if (on[v]) low[u] = min(low[u], num[v]);",
+      "      }",
+      "      if (low[u] == num[u]) {",
+      "        while (true) {",
+      "          int v = stk.back();",
+      "          stk.pop_back();",
+      "          on[v] = 0;",
+      "          comp[v] = nc;",
+      "          if (v == u) break;",
+      "        }",
+      "        nc++;",
+      "      }",
+      "    };",
+      "    for (int u = 0; u < 2 * n; u++)",
+      "      if (num[u] == -1) go(go, u);",
+      "    for (int x = 0; x < n; x++) {",
+      "      if (comp[2 * x] == comp[2 * x + 1]) return false;",
+      "      value[x] = comp[2 * x + 1] < comp[2 * x];",
+      "    }",
+      "    return true;",
+      "  }",
+      "};",
+    }),
+  }),
+})

@@ -1,0 +1,53 @@
+local ls = require("luasnip")
+local s = ls.snippet
+local t = ls.text_node
+
+ls.add_snippets("cpp", {
+
+  s("bsgs", {
+    t({
+      "long long discrete_log(long long a, long long b, long long m) {",
+      "  a %= m;",
+      "  b %= m;",
+      "  if (m == 1) return 0;",
+      "  if (b == 1 % m) return 0;",
+      "  auto inv = [&](long long x) {",
+      "    long long bb = m, u = 1, v = 0;",
+      "    while (bb) {",
+      "      long long t = x / bb;",
+      "      x -= t * bb;",
+      "      swap(x, bb);",
+      "      u -= t * v;",
+      "      swap(u, v);",
+      "    }",
+      "    return ((u % m) + m) % m;",
+      "  };",
+      "  auto power = [&](long long x, long long e) {",
+      "    long long r = 1 % m;",
+      "    x %= m;",
+      "    while (e > 0) {",
+      "      if (e & 1) r = r * x % m;",
+      "      x = x * x % m;",
+      "      e >>= 1;",
+      "    }",
+      "    return r;",
+      "  };",
+      "  long long n = (long long)sqrt((double)m) + 1;",
+      "  unordered_map<long long, long long> baby;",
+      "  long long cur = 1 % m;",
+      "  for (long long q = 0; q < n; q++) {",
+      "    if (!baby.count(cur)) baby[cur] = q;",
+      "    cur = cur * a % m;",
+      "  }",
+      "  long long step = inv(power(a, n));",
+      "  long long gamma = b % m;",
+      "  for (long long p = 0; p <= n; p++) {",
+      "    auto it = baby.find(gamma);",
+      "    if (it != baby.end()) return p * n + it->second;",
+      "    gamma = gamma * step % m;",
+      "  }",
+      "  return -1;",
+      "}",
+    }),
+  }),
+})

@@ -1,0 +1,51 @@
+local ls = require("luasnip")
+local s = ls.snippet
+local t = ls.text_node
+
+ls.add_snippets("cpp", {
+
+  s("trie", {
+    t({
+      "struct Trie {",
+      "  vector<array<int, 26>> nxt;",
+      "  vector<int> cnt, term;",
+      "  Trie() { new_node(); }",
+      "  int new_node() {",
+      "    array<int, 26> a;",
+      "    a.fill(-1);",
+      "    nxt.push_back(a);",
+      "    cnt.push_back(0);",
+      "    term.push_back(0);",
+      "    return (int)nxt.size() - 1;",
+      "  }",
+      "  void insert(const string &s) {",
+      "    int u = 0;",
+      "    for (char ch : s) {",
+      "      int c = ch - 'a';",
+      "      if (nxt[u][c] == -1) nxt[u][c] = new_node();",
+      "      u = nxt[u][c];",
+      "      cnt[u]++;",
+      "    }",
+      "    term[u]++;",
+      "  }",
+      "  int walk(const string &s) const {",
+      "    int u = 0;",
+      "    for (char ch : s) {",
+      "      int c = ch - 'a';",
+      "      if (nxt[u][c] == -1) return -1;",
+      "      u = nxt[u][c];",
+      "    }",
+      "    return u;",
+      "  }",
+      "  bool contains(const string &s) const {",
+      "    int u = walk(s);",
+      "    return u != -1 && term[u] > 0;",
+      "  }",
+      "  int count_prefix(const string &s) const {",
+      "    int u = walk(s);",
+      "    return u == -1 ? 0 : cnt[u];",
+      "  }",
+      "};",
+    }),
+  }),
+})

@@ -9,6 +9,14 @@ map("n", "<C-j>", "<cmd>TmuxNavigateDown<CR>", { desc = "Navigate down" })
 map("n", "<C-k>", "<cmd>TmuxNavigateUp<CR>", { desc = "Navigate up" })
 map("n", "<C-l>", "<cmd>TmuxNavigateRight<CR>", { desc = "Navigate right" })
 
+-- Terminal-mode navigation: <cmd> maps work in :terminal without leaving the buffer,
+-- so C-h/j/k/l switches panes from inside opencode/TUIs too (the plugin's legacy
+-- tnoremaps type the command text literally into the TUI — disabled via no_mappings).
+map("t", "<C-h>", "<cmd>TmuxNavigateLeft<CR>", { desc = "Navigate left (term)" })
+map("t", "<C-j>", "<cmd>TmuxNavigateDown<CR>", { desc = "Navigate down (term)" })
+map("t", "<C-k>", "<cmd>TmuxNavigateUp<CR>", { desc = "Navigate up (term)" })
+map("t", "<C-l>", "<cmd>TmuxNavigateRight<CR>", { desc = "Navigate right (term)" })
+
 -- Basic file operations
 map("n", "<leader>w", "<cmd>w<CR>", { desc = "Write file" })
 map("n", "<leader>q", "<cmd>q<CR>", { desc = "Quit" })
