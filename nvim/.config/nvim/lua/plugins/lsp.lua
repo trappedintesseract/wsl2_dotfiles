@@ -9,14 +9,18 @@ return {
         config = function()
             local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-            -- C / C++
+            local clangd_cmd = {
+                "clangd",
+                "--background-index",
+                "--clang-tidy",
+            }
+            if vim.uv.os_uname().sysname == "Darwin" then
+                table.insert(clangd_cmd, "--query-driver=/opt/homebrew/bin/g++*")
+            end
+
             vim.lsp.config("clangd", {
                 capabilities = capabilities,
-                cmd = {
-                    "clangd",
-                    "--background-index",
-                    "--clang-tidy",
-                },
+                cmd = clangd_cmd,
             })
 
             -- Python

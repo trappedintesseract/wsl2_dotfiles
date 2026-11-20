@@ -1,0 +1,50 @@
+local ls = require("luasnip")
+local s = ls.snippet
+local t = ls.text_node
+
+ls.add_snippets("cpp", {
+
+  s("hopcroft", {
+    t({
+      "template <typename G>",
+      "int hopcroft_karp(int n, int m, const G &adj) {",
+      "  vector<int> matchL(n + 1, -1), matchR(m + 1, -1), dist(n + 1);",
+      "  auto bfs = [&]() {",
+      "    queue<int> q;",
+      "    for (int u = 1; u <= n; u++) {",
+      "      if (matchL[u] == -1) { dist[u] = 0; q.push(u); }",
+      "      else dist[u] = -1;",
+      "    }",
+      "    bool found = false;",
+      "    while (!q.empty()) {",
+      "      int u = q.front();",
+      "      q.pop();",
+      "      for (int v : adj[u]) {",
+      "        int w = matchR[v];",
+      "        if (w == -1) found = true;",
+      "        else if (dist[w] == -1) { dist[w] = dist[u] + 1; q.push(w); }",
+      "      }",
+      "    }",
+      "    return found;",
+      "  };",
+      "  auto dfs = [&](auto &&self, int u) -> bool {",
+      "    for (int v : adj[u]) {",
+      "      int w = matchR[v];",
+      "      if (w == -1 || (dist[w] == dist[u] + 1 && self(self, w))) {",
+      "        matchL[u] = v;",
+      "        matchR[v] = u;",
+      "        return true;",
+      "      }",
+      "    }",
+      "    dist[u] = -1;",
+      "    return false;",
+      "  };",
+      "  int matching = 0;",
+      "  while (bfs())",
+      "    for (int u = 1; u <= n; u++)",
+      "      if (matchL[u] == -1 && dfs(dfs, u)) matching++;",
+      "  return matching;",
+      "}",
+    }),
+  }),
+})

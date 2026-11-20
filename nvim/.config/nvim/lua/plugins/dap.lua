@@ -5,6 +5,7 @@ return {
         dependencies = {
             "rcarriga/nvim-dap-ui",
             "nvim-neotest/nvim-nio",
+            "mfussenegger/nvim-dap-python",
         },
 
         config = function()
@@ -28,16 +29,32 @@ return {
                 dapui.close()
             end
 
-            -- GDB native DAP adapter
-            dap.adapters.gdb = {
-                type = "executable",
-                command = "gdb",
-                args = {
-                    "--interpreter=dap",
-                    "--eval-command",
-                    "set print pretty on",
-                },
-            }
+            -- Native DAP adapter.
+            -- Linux/WSL: gdb --interpreter=dap.
+            -- macOS: gdb is unsigned/unavailable on Apple Silicon, so use
+            -- lldb-dap from the Xcode Command Line Tools instead.
+            if vim.uv.os_uname().sysname == "Darwin" then
+                local lldb_dap = vim.fn.exepath("lldb-dap")
+                if lldb_dap == "" then
+                    lldb_dap =
+                        "/Library/Developer/CommandLineTools/usr/bin/lldb-dap"
+                end
+
+                dap.adapters.gdb = {
+                    type = "executable",
+                    command = lldb_dap,
+                }
+            else
+                dap.adapters.gdb = {
+                    type = "executable",
+                    command = "gdb",
+                    args = {
+                        "--interpreter=dap",
+                        "--eval-command",
+                        "set print pretty on",
+                    },
+                }
+            end
 
             -- C
             dap.configurations.c = {
@@ -78,23 +95,19 @@ return {
                     stopAtBeginningOfMainSubprogram = false,
                 },
             }
-            -- Python / debugpy
-            dap.adapters.python = {
-                type = "executable",
-                command = vim.fn.expand("~/.local/share/nvim/python-env/bin/python"),
-                args = { "-m", "debugpy.adapter" },
-            }
 
-            dap.configurations.python = {
-                {
-                    type = "python",
-                    request = "launch",
-                    name = "Launch current file",
-                    program = "${file}",
-                    pythonPath = vim.fn.expand("~/.local/share/nvim/python-env/bin/python"),
-                    console = "integratedTerminal",
-                },
-            }
+            local python = vim.fn.exepath("python3")
+            for _, candidate in ipairs({
+                vim.fn.expand("~/.virtualenvs/nvim/bin/python"),
+                vim.fn.expand("~/.local/share/nvim/python-env/bin/python"),
+            }) do
+                if vim.fn.executable(candidate) == 1 then
+                    python = candidate
+                    break
+                end
+            end
+            require("dap-python").setup(python)
+
             -- Debugger controls
 
             vim.keymap.set("n", "<leader>db", dap.toggle_breakpoint, {

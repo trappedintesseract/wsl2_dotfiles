@@ -14,10 +14,13 @@ return {
             -- Load VS Code style snippets
             require("luasnip.loaders.from_vscode").lazy_load()
 
-            -- Load our custom Lua snippets
-            require("luasnip.loaders.from_lua").lazy_load({
-                paths = vim.fn.stdpath("config") .. "/lua/snippets",
-            })
+            -- Load our custom Lua snippets (dir is optional — skipped if absent)
+            local snip_dir = vim.fn.stdpath("config") .. "/lua/snippets"
+            if vim.uv.fs_stat(snip_dir) then
+                require("luasnip.loaders.from_lua").lazy_load({
+                    paths = snip_dir,
+                })
+            end
 
             ls.config.set_config({
                 history = true,

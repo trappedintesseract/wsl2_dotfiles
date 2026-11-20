@@ -9,7 +9,9 @@
 #include <sys/types.h>
 
 #pragma GCC optimize("Ofast")
+#ifdef __x86_64__
 #pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,avx2,fma")
+#endif
 #pragma GCC optimize("unroll-loops")
 
 #include <bits/stdc++.h>

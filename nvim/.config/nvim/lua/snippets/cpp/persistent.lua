@@ -1,0 +1,50 @@
+local ls = require("luasnip")
+local s = ls.snippet
+local t = ls.text_node
+
+ls.add_snippets("cpp", {
+
+  s("persistent", {
+    t({
+      "struct PersistentSeg {",
+      "  struct Node {",
+      "    int lc, rc, cnt;",
+      "  };",
+      "  int n;",
+      "  vector<Node> t;",
+      "  PersistentSeg(int n) : n(n) { t.push_back({0, 0, 0}); }",
+      "  int clone(int node) {",
+      "    t.push_back(t[node]);",
+      "    return (int)t.size() - 1;",
+      "  }",
+      "  int update(int prev, int lo, int hi, int pos, int delta) {",
+      "    int cur = clone(prev);",
+      "    t[cur].cnt += delta;",
+      "    if (lo != hi) {",
+      "      int mid = (lo + hi) / 2;",
+      "      if (pos <= mid) t[cur].lc = update(t[prev].lc, lo, mid, pos, delta);",
+      "      else t[cur].rc = update(t[prev].rc, mid + 1, hi, pos, delta);",
+      "    }",
+      "    return cur;",
+      "  }",
+      "  int kth(int rootL, int rootR, int lo, int hi, int k) const {",
+      "    while (lo != hi) {",
+      "      int mid = (lo + hi) / 2;",
+      "      int leftCnt = t[t[rootR].lc].cnt - t[t[rootL].lc].cnt;",
+      "      if (k <= leftCnt) {",
+      "        rootL = t[rootL].lc;",
+      "        rootR = t[rootR].lc;",
+      "        hi = mid;",
+      "      } else {",
+      "        k -= leftCnt;",
+      "        rootL = t[rootL].rc;",
+      "        rootR = t[rootR].rc;",
+      "        lo = mid + 1;",
+      "      }",
+      "    }",
+      "    return lo;",
+      "  }",
+      "};",
+    }),
+  }),
+})

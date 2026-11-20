@@ -9,6 +9,16 @@ return {
         config = function()
             local competitest = require("competitest")
 
+            -- macOS: plain g++ is Apple clang, which has no bits/stdc++.h
+            -- or pb_ds — use Homebrew GCC when available.
+            local gxx = "g++"
+            for _, candidate in ipairs({ "g++-15", "g++-14", "g++-13" }) do
+                if vim.fn.executable(candidate) == 1 then
+                    gxx = candidate
+                    break
+                end
+            end
+
             competitest.setup({
                 floating_border = "rounded",
 
@@ -17,7 +27,7 @@ return {
                 -- C++
                 compile_command = {
                     cpp = {
-                        exec = "g++",
+                        exec = gxx,
                         args = {
                             "-std=c++20",
                             "-O2",
@@ -109,6 +119,39 @@ return {
                 vim.cmd("CompetiTest show_ui")
             end, {
                 desc = "Show CP testcase UI",
+            })
+
+            vim.keymap.set("n", "<leader>ci", function()
+                local file = vim.fn.expand("%:p")
+                local bin = vim.fn.expand("%:p:r")
+                local dir = vim.fn.expand("%:p:h")
+
+                if vim.bo.filetype ~= "cpp" then
+                    vim.notify("Not a C++ buffer", vim.log.levels.WARN)
+                    return
+                end
+
+                vim.cmd("write")
+
+                local out = vim.fn.system({
+                    gxx, "-std=c++20", "-O2", "-pipe", file, "-o", bin,
+                })
+                if vim.v.shell_error ~= 0 then
+                    vim.fn.setqflist({}, " ", {
+                        title = "Compile errors",
+                        lines = vim.split(out, "\n", { trimempty = true }),
+                        efm = "%f:%l:%c: %m,%f:%l: %m",
+                    })
+                    vim.cmd("copen")
+                    return
+                end
+
+                vim.cmd("botright split")
+                vim.cmd("lcd " .. vim.fn.fnameescape(dir))
+                vim.cmd("terminal " .. vim.fn.fnameescape(bin))
+                vim.cmd("startinsert")
+            end, {
+                desc = "Compile + run in terminal (custom stdin)",
             })
         end,
     },
