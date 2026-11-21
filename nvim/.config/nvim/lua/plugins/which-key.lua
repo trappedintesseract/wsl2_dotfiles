@@ -6,8 +6,8 @@ return {
 
         opts = {
             spec = {
-                { "<leader>c", group = "CP / Claude" },
-                { "<leader>o", group = "OpenCode" },
+                { "<leader>c", group = "CP" },
+                { "<leader>v", group = "Notes" },
                 {
                     "<leader>f",
                     group = "find",

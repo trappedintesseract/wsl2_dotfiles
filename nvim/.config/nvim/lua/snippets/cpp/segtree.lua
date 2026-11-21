@@ -4,7 +4,7 @@ local t = ls.text_node
 
 ls.add_snippets("cpp", {
 
-  s("segtree", {
+  s("seg", {
     t({
       "template <typename T>",
       "struct SegTree {",

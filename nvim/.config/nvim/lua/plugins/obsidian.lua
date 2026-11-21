@@ -1,57 +1,49 @@
 return {
     {
-        "epwalsh/obsidian.nvim",
+        "obsidian-nvim/obsidian.nvim",
         version = "*",
         lazy = true,
-        cmd = {
-            "ObsidianOpen",
-            "ObsidianNew",
-            "ObsidianQuickSwitch",
-            "ObsidianFollowLink",
-            "ObsidianBacklinks",
-            "ObsidianTags",
-            "ObsidianToday",
-            "ObsidianTemplate",
-            "ObsidianSearch",
+        cmd = "Obsidian",
+        event = {
+            "BufReadPre " .. vim.fn.expand("~") .. "/notes/**.md",
+            "BufNewFile " .. vim.fn.expand("~") .. "/notes/**.md",
         },
         dependencies = {
             "nvim-lua/plenary.nvim",
-            "hrsh7th/nvim-cmp",
+            "nvim-telescope/telescope.nvim",
         },
+        ---@module "obsidian"
+        ---@type obsidian.config
         opts = {
+            legacy_commands = false,
             workspaces = {
                 {
-                    name = "vault",
-                    path = "~/vault",
+                    name = "notes",
+                    path = "~/notes",
                 },
             },
+            picker = {
+                name = "telescope.nvim",
+            },
             completion = {
-                nvim_cmp = true,
                 min_chars = 2,
             },
-            note_frontmatter_func = function(note)
-                if note.title then
-                    note:add_alias(note.title)
-                end
-                local out = { id = note.id, aliases = note.aliases or {} }
-                local tags = note.tags or {}
-                if #tags > 0 then
-                    out.tags = tags
-                end
-                return out
-            end,
             daily_notes = {
                 folder = "sessions",
                 date_format = "%Y-%m-%d",
             },
         },
+        config = function(_, opts)
+            vim.fn.mkdir(vim.fn.expand("~/notes"), "p")
+            require("obsidian").setup(opts)
+        end,
         keys = {
-            { "<leader>vf", "<cmd>ObsidianQuickSwitch<cr>", desc = "Vault: find note" },
-            { "<leader>vg", "<cmd>ObsidianSearch<cr>", desc = "Vault: grep search" },
-            { "<leader>vn", "<cmd>ObsidianNew<cr>", desc = "Vault: new note" },
-            { "<leader>vb", "<cmd>ObsidianBacklinks<cr>", desc = "Vault: backlinks" },
-            { "<leader>vt", "<cmd>ObsidianToday<cr>", desc = "Vault: today's session note" },
-            { "<leader>vT", "<cmd>ObsidianTags<cr>", desc = "Vault: find by tag" },
+            { "<leader>vf", "<cmd>Obsidian quick_switch<cr>", desc = "Notes: find note" },
+            { "<leader>vg", "<cmd>Obsidian search<cr>", desc = "Notes: grep search" },
+            { "<leader>vn", "<cmd>Obsidian new<cr>", desc = "Notes: new note" },
+            { "<leader>vb", "<cmd>Obsidian backlinks<cr>", desc = "Notes: backlinks" },
+            { "<leader>vt", "<cmd>Obsidian today<cr>", desc = "Notes: today's note" },
+            { "<leader>vT", "<cmd>Obsidian tags<cr>", desc = "Notes: find by tag" },
         },
     },
 }

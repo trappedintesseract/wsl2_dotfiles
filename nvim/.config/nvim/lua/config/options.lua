@@ -22,9 +22,9 @@ opt.splitbelow = true
 
 opt.cursorline = true
 
--- Consistency with terminal/opencode: steady block cursor in every mode,
--- and lualine owns the statusline so hide the redundant -- INSERT -- text.
-opt.guicursor = "n-v-c-sm:block,i-ci-ve:block,r-cr-o:block"
+-- Block cursor in normal/visual, thin line in insert, underline in replace;
+-- lualine owns the statusline so hide the redundant -- INSERT -- text.
+opt.guicursor = "n-v-c-sm:block,i-ci-ve:ver25,r-cr-o:hor20"
 opt.showmode = false
 opt.laststatus = 3
 

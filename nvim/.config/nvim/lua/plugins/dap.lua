@@ -97,14 +97,9 @@ return {
             }
 
             local python = vim.fn.exepath("python3")
-            for _, candidate in ipairs({
-                vim.fn.expand("~/.virtualenvs/nvim/bin/python"),
-                vim.fn.expand("~/.local/share/nvim/python-env/bin/python"),
-            }) do
-                if vim.fn.executable(candidate) == 1 then
-                    python = candidate
-                    break
-                end
+            local py_env = vim.fn.expand("~/.local/share/nvim/python-env/bin/python")
+            if vim.fn.executable(py_env) == 1 then
+                python = py_env
             end
             require("dap-python").setup(python)
 

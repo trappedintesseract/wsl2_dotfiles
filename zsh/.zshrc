@@ -8,7 +8,6 @@ export VISUAL='nvim'
 export PAGER='less'
 export LESS='-R --mouse'
 export NOTES_DIR="$HOME/notes"
-export CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1
 
 if [[ -d /opt/homebrew/bin ]]; then
   export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
@@ -23,7 +22,7 @@ export MAKEFLAGS="-j$(getconf _NPROCESSORS_ONLN 2>/dev/null || printf '1')"
 
 HISTFILE="$HOME/.zsh_history"
 HISTSIZE=50000
-SAVEHIST=25000
+SAVEHIST=50000
 
 setopt APPEND_HISTORY
 setopt INC_APPEND_HISTORY
@@ -36,8 +35,6 @@ setopt HIST_REDUCE_BLANKS
 setopt HIST_VERIFY
 setopt EXTENDED_GLOB
 setopt INTERACTIVE_COMMENTS
-setopt GLOB_DOTS
-setopt NO_CASE_GLOB
 setopt AUTO_CD
 setopt AUTO_PUSHD
 setopt PUSHD_IGNORE_DUPS
@@ -59,7 +56,7 @@ zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 zstyle ':completion:*:warnings' format '%F{red}no matches%f'
 
 bindkey -v
-export KEYTIMEOUT=40
+export KEYTIMEOUT=1
 
 autoload -U edit-command-line
 zle -N edit-command-line
@@ -142,50 +139,6 @@ wthr() {
   fi
 }
 
-export VENV_HOME="$HOME/.virtualenvs"
-[[ -d "$VENV_HOME" ]] || mkdir -p "$VENV_HOME"
-
-lsvenv() { ls -1 "$VENV_HOME"; }
-
-venv() {
-  [[ $# -eq 1 ]] && source "$VENV_HOME/$1/bin/activate" || echo "Usage: venv <name>"
-}
-
-mkvenv() {
-  [[ $# -eq 1 ]] && python3 -m venv "$VENV_HOME/$1" || echo "Usage: mkvenv <name>"
-}
-
-rmvenv() {
-  [[ $# -eq 1 ]] && command rm -rf "$VENV_HOME/$1" || echo "Usage: rmvenv <name>"
-}
-
-mkker() {
-  [[ $# -eq 1 ]] || { echo "Usage: mkker <kernel-name>"; return 1; }
-  python -m pip install -U ipykernel && python -m ipykernel install --user --name "$1" --display-name "Python ($1)"
-}
-
-nvimvenv() {
-  local venv_path project_root nvim_file=".nvim.lua"
-
-  if [[ -n "$1" ]]; then
-    venv_path="$VENV_HOME/$1/bin/python"
-  elif [[ -n "$VIRTUAL_ENV" ]]; then
-    venv_path="$VIRTUAL_ENV/bin/python"
-  else
-    echo "No venv active"
-    return 1
-  fi
-
-  project_root=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
-
-  cat > "$project_root/$nvim_file" <<EOF
-vim.g.project_python = "$venv_path"
-vim.g.python_host_prog = nil
-EOF
-
-  echo "Created $project_root/$nvim_file"
-}
-
 runc() {
   [[ $# -ge 1 ]] || { echo "Usage: runc <file.cpp>"; return 1; }
   local gxx=g++ c
@@ -210,7 +163,7 @@ export FZF_DEFAULT_OPTS='--color=fg:#f8f8f2,bg:#282a36,hl:#bd93f9 --color=fg+:#f
 
 if [[ "$OSTYPE" == darwin* ]] && command -v fzf >/dev/null; then
   _fzf_cache="$HOME/.fzf-init.zsh"
-  fzf --zsh >! "$_fzf_cache"
+  [[ ! -f "$_fzf_cache" || "$(command -v fzf)" -nt "$_fzf_cache" ]] && fzf --zsh >! "$_fzf_cache"
   source "$_fzf_cache"
 else
   [[ -f /usr/share/fzf/key-bindings.zsh ]] && source /usr/share/fzf/key-bindings.zsh

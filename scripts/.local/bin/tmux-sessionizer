@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+#  tmux-sessionizer
+# ==========================================================================
+#  Basado en el script de ThePrimeagen. Abre (o cambia a) una sesión tmux
+#  por proyecto, con fuzzy finder sobre tus directorios de trabajo.
+#
+#  Uso:
+#    tmux-sessionizer              # fuzzy finder sobre los directorios
+#    tmux-sessionizer /ruta/dir    # saltar directamente a un directorio
+#    tmux-sessionizer --switch     # fuzzy finder sobre sesiones activas
+#
+#  Instalar:
+#    cp tmux-sessionizer ~/.local/bin/
+#    chmod +x ~/.local/bin/tmux-sessionizer
+# ==========================================================================
+
+# ── Directorios a escanear ───────────────────────────────────────────────
+# Ajusta estas rutas a tu estructura. find busca 1 nivel de profundidad
+# en cada una. Puedes añadir más rutas separadas por espacios.
+SEARCH_DIRS=(
+    ~/projects
+    ~/proyectos
+    ~/kernel
+    ~/security
+    ~/work
+    ~/personal
+    ~/repos
+    ~/CP
+    ~/.config
+)
+
+# Standalone directories to include directly (not their subfolders)
+DIRECT_DIRS=(
+    ~/wsl2_dotfiles
+    ~/notes
+)
+
+# ── Switch entre sesiones activas ────────────────────────────────────────
+if [[ "$1" == "--switch" ]]; then
+    selected=$(tmux list-sessions -F "#{session_name}" 2>/dev/null | fzf \
+        --prompt="tmux session > " \
+        --height=75% \
+        --reverse \
+        --preview='tmux capture-pane -ep -t {}' \
+        --preview-window=right:60%)
+
+    [[ -z "$selected" ]] && exit 0
+    tmux switch-client -t "$selected" 2>/dev/null || tmux attach -t "$selected"
+    exit 0
+fi
+
+# ── Selección de directorio ──────────────────────────────────────────────
+if [[ $# -eq 1 ]]; then
+    selected="$1"
+else
+    # Construir lista de directorios existentes
+    existing_dirs=()
+    for d in "${SEARCH_DIRS[@]}"; do
+        [[ -d "$d" ]] && existing_dirs+=("$d")
+    done
+
+    existing_direct_dirs=()
+    for d in "${DIRECT_DIRS[@]}"; do
+        [[ -d "$d" ]] && existing_direct_dirs+=("$d")
+    done
+
+    if [[ ${#existing_dirs[@]} -eq 0 && ${#existing_direct_dirs[@]} -eq 0 ]]; then
+        echo "No se encontró ningún directorio de búsqueda."
+        echo "Edita SEARCH_DIRS / DIRECT_DIRS en $(realpath "$0")"
+        exit 1
+    fi
+
+    selected=$(
+        {
+            if [[ ${#existing_dirs[@]} -gt 0 ]]; then
+                find "${existing_dirs[@]}" -mindepth 1 -maxdepth 1 -type d ! -name '.git' 2>/dev/null
+            fi
+            if [[ ${#existing_direct_dirs[@]} -gt 0 ]]; then
+                printf '%s\n' "${existing_direct_dirs[@]}"
+            fi
+        } | sort -u | fzf \
+            --prompt="proyecto > " \
+            --height=75% \
+            --reverse \
+            --preview='ls -la --color=always {} 2>/dev/null | head -20; echo ""; git -C {} log --oneline -5 2>/dev/null || echo "(no git)"'
+    )
+fi
+
+[[ -z "$selected" ]] && exit 0
+
+# ── Nombre de sesión (limpio, sin puntos) ────────────────────────────────
+selected_name=$(basename "$selected" | tr './ ' '___')
+
+# ── Crear o cambiar a la sesión ──────────────────────────────────────────
+tmux_running=$(pgrep tmux 2>/dev/null)
+
+# Si no hay tmux corriendo, crear sesión y attach
+if [[ -z "$TMUX" ]] && [[ -z "$tmux_running" ]]; then
+    tmux new-session -s "$selected_name" -c "$selected"
+    exit 0
+fi
+
+# Crear sesión en background si no existe
+if ! tmux has-session -t="$selected_name" 2>/dev/null; then
+    tmux new-session -ds "$selected_name" -c "$selected"
+fi
+
+# Cambiar a la sesión (attach o switch según contexto)
+if [[ -z "$TMUX" ]]; then
+    tmux attach -t "$selected_name"
+else
+    tmux switch-client -t "$selected_name"
+fi
+
